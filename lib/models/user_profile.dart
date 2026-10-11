@@ -38,8 +38,10 @@ class VolunteerLog {
   }
 }
 
-/// Represents the user's profile, preferences, bookmarks, and activity state.
+/// Represents the volunteer's profile, preferences, bookmarks, and activity state.
 class UserProfile {
+  String userId;
+  String email;
   String name;
   Set<String> selectedCauses;
   Set<String> userSkills;
@@ -50,6 +52,8 @@ class UserProfile {
   List<VolunteerLog> completedLogs;
 
   UserProfile({
+    this.userId = 'usr-vol-default',
+    this.email = 'volunteer@demo.com',
     this.name = 'EcoVolunteer',
     Set<String>? selectedCauses,
     Set<String>? userSkills,
@@ -85,6 +89,8 @@ class UserProfile {
   }
 
   Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'email': email,
         'name': name,
         'selectedCauses': selectedCauses.toList(),
         'userSkills': userSkills.toList(),
@@ -97,6 +103,8 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
+      userId: json['userId'] as String? ?? 'usr-vol-default',
+      email: json['email'] as String? ?? 'volunteer@demo.com',
       name: json['name'] as String? ?? 'EcoVolunteer',
       selectedCauses: Set<String>.from(json['selectedCauses'] as List? ?? ['Environment', 'Education']),
       userSkills: Set<String>.from(json['userSkills'] as List? ?? ['Teamwork', 'Gardening', 'Teaching']),

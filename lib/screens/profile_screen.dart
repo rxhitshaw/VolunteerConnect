@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user_profile.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import 'auth/welcome_screen.dart';
 
 /// Screen allowing the user to update their name, causes, skills,
 /// availability, and distance preferences, and inspect volunteering impact.
@@ -142,6 +143,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log Out?'),
+        content: const Text('Are you sure you want to end your volunteer session?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await StorageService.clearSession();
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil<void>(
+        context,
+        MaterialPageRoute(builder: (ctx) => const WelcomeScreen()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -457,6 +486,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Colors.red.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _handleLogout,
+                  icon: const Icon(Icons.logout, color: Colors.black87),
+                  label: const Text(
+                    'Log Out of Volunteer Account',
+                    style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey.shade400),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),

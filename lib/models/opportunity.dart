@@ -14,6 +14,8 @@ class Opportunity {
   final String description;
   final List<String> requiredSkills;
   final String organizer;
+  final String providerId; // Identifies the opportunity provider/creator
+  final String status; // 'open', 'full', 'completed'
   final bool isSample; // Clearly identifies sample event
 
   const Opportunity({
@@ -31,10 +33,56 @@ class Opportunity {
     required this.description,
     required this.requiredSkills,
     required this.organizer,
+    this.providerId = 'org-default',
+    this.status = 'open',
     this.isSample = true,
   });
 
   int get spotsRemaining => (spotsTotal - spotsFilled).clamp(0, spotsTotal);
+
+  bool get isOpen => status == 'open' && spotsRemaining > 0;
+  bool get isFull => status == 'full' || spotsRemaining == 0;
+  bool get isCompleted => status == 'completed';
+
+  Opportunity copyWith({
+    String? id,
+    String? title,
+    String? cause,
+    String? location,
+    String? date,
+    String? time,
+    String? dayOfWeek,
+    int? hours,
+    int? distanceKm,
+    int? spotsTotal,
+    int? spotsFilled,
+    String? description,
+    List<String>? requiredSkills,
+    String? organizer,
+    String? providerId,
+    String? status,
+    bool? isSample,
+  }) {
+    return Opportunity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      cause: cause ?? this.cause,
+      location: location ?? this.location,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      hours: hours ?? this.hours,
+      distanceKm: distanceKm ?? this.distanceKm,
+      spotsTotal: spotsTotal ?? this.spotsTotal,
+      spotsFilled: spotsFilled ?? this.spotsFilled,
+      description: description ?? this.description,
+      requiredSkills: requiredSkills ?? this.requiredSkills,
+      organizer: organizer ?? this.organizer,
+      providerId: providerId ?? this.providerId,
+      status: status ?? this.status,
+      isSample: isSample ?? this.isSample,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -51,6 +99,8 @@ class Opportunity {
         'description': description,
         'requiredSkills': requiredSkills,
         'organizer': organizer,
+        'providerId': providerId,
+        'status': status,
         'isSample': isSample,
       };
 
@@ -70,6 +120,8 @@ class Opportunity {
       description: json['description'] as String,
       requiredSkills: List<String>.from(json['requiredSkills'] as List),
       organizer: json['organizer'] as String,
+      providerId: json['providerId'] as String? ?? 'org-default',
+      status: json['status'] as String? ?? 'open',
       isSample: json['isSample'] as bool? ?? true,
     );
   }

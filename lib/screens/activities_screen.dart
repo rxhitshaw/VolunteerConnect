@@ -9,12 +9,14 @@ import 'opportunity_detail_screen.dart';
 /// Includes strict anti-duplicate completion verification and hours calculation.
 class ActivitiesScreen extends StatefulWidget {
   final UserProfile userProfile;
+  final List<Opportunity>? opportunities;
   final VoidCallback onDataChanged;
   final VoidCallback onBrowseOpportunities;
 
   const ActivitiesScreen({
     super.key,
     required this.userProfile,
+    this.opportunities,
     required this.onDataChanged,
     required this.onBrowseOpportunities,
   });
@@ -40,7 +42,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
   }
 
   List<Opportunity> get _joinedOpportunities {
-    return sampleOpportunities.where((opp) {
+    final list = widget.opportunities ?? sampleOpportunities;
+    return list.where((opp) {
       return widget.userProfile.joinedOpportunityIds.contains(opp.id) &&
           !widget.userProfile.isOpportunityCompleted(opp.id);
     }).toList();
@@ -162,7 +165,43 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
             });
             widget.onDataChanged();
           },
+          onLeave: () {
+            setState(() {
+              widget.userProfile.joinedOpportunityIds.remove(opp.id);
+            });
+            widget.onDataChanged();
+          },
         ),
+      ),
+    );
+  }
+
+  void _confirmLeave(Opportunity opp) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Attendance?'),
+        content: Text('Are you sure you want to leave ${opp.title}? Your spot will be released.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Stay Joined'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                widget.userProfile.joinedOpportunityIds.remove(opp.id);
+              });
+              widget.onDataChanged();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Left ${opp.title}. Spot released.')),
+              );
+            },
+            child: const Text('Leave Activity'),
+          ),
+        ],
       ),
     );
   }
@@ -416,11 +455,31 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
                                           style: OutlinedButton.styleFrom(
                                             visualDensity: VisualDensity.compact,
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
+                                              horizontal: 10,
                                               vertical: 8,
                                             ),
                                           ),
-                                          child: const Text('View Details'),
+                                          child: const Text('Details'),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        TextButton.icon(
+                                          onPressed: () => _confirmLeave(opp),
+                                          icon: Icon(Icons.close, size: 14, color: Colors.red.shade700),
+                                          label: Text(
+                                            'Leave',
+                                            style: TextStyle(
+                                              color: Colors.red.shade700,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          style: TextButton.styleFrom(
+                                            visualDensity: VisualDensity.compact,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 8,
+                                            ),
+                                          ),
                                         ),
                                         const Spacer(),
                                         FilledButton.icon(
@@ -430,7 +489,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
                                           style: FilledButton.styleFrom(
                                             visualDensity: VisualDensity.compact,
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 14,
+                                              horizontal: 12,
                                               vertical: 8,
                                             ),
                                           ),

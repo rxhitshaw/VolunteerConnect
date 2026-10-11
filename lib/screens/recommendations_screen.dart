@@ -12,12 +12,14 @@ import 'opportunity_detail_screen.dart';
 /// 40/30/30 rule-based recommendation engine, with reasons explaining each score.
 class RecommendationsScreen extends StatefulWidget {
   final UserProfile userProfile;
+  final List<Opportunity>? opportunities;
   final VoidCallback onDataChanged;
   final VoidCallback onGoToProfile;
 
   const RecommendationsScreen({
     super.key,
     required this.userProfile,
+    this.opportunities,
     required this.onDataChanged,
     required this.onGoToProfile,
   });
@@ -39,6 +41,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
           isCompleted: widget.userProfile.isOpportunityCompleted(opp.id),
           onToggleBookmark: () => _toggleBookmark(opp.id),
           onJoin: () => _joinOpportunity(opp.id),
+          onLeave: () => _leaveOpportunity(opp.id),
         ),
       ),
     );
@@ -58,6 +61,13 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   void _joinOpportunity(String id) {
     setState(() {
       widget.userProfile.joinedOpportunityIds.add(id);
+    });
+    widget.onDataChanged();
+  }
+
+  void _leaveOpportunity(String id) {
+    setState(() {
+      widget.userProfile.joinedOpportunityIds.remove(id);
     });
     widget.onDataChanged();
   }
@@ -220,7 +230,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen> {
   @override
   Widget build(BuildContext context) {
     final rankedResults = RecommendationEngine.rank(
-      opportunities: sampleOpportunities,
+      opportunities: widget.opportunities ?? sampleOpportunities,
       user: widget.userProfile,
     );
 

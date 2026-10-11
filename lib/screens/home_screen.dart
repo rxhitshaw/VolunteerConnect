@@ -10,11 +10,13 @@ import 'opportunity_detail_screen.dart';
 /// quick impact metrics, and responsive opportunity cards.
 class HomeScreen extends StatefulWidget {
   final UserProfile userProfile;
+  final List<Opportunity>? opportunities;
   final VoidCallback onDataChanged;
 
   const HomeScreen({
     super.key,
     required this.userProfile,
+    this.opportunities,
     required this.onDataChanged,
   });
 
@@ -31,13 +33,16 @@ class _HomeScreenState extends State<HomeScreen> {
     'All',
     'Environment',
     'Education',
+    'Food Donation',
     'Animal Welfare',
+    'Community Support',
     'Community',
     'Healthcare',
   ];
 
   List<Opportunity> get _filteredOpportunities {
-    return sampleOpportunities.where((opp) {
+    final list = widget.opportunities ?? sampleOpportunities;
+    return list.where((opp) {
       // Category match
       final matchesCategory =
           _selectedCategory == 'All' || opp.cause == _selectedCategory;
@@ -70,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           isCompleted: widget.userProfile.isOpportunityCompleted(opp.id),
           onToggleBookmark: () => _toggleBookmark(opp.id),
           onJoin: () => _joinOpportunity(opp.id),
+          onLeave: () => _leaveOpportunity(opp.id),
         ),
       ),
     );
@@ -89,6 +95,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void _joinOpportunity(String id) {
     setState(() {
       widget.userProfile.joinedOpportunityIds.add(id);
+    });
+    widget.onDataChanged();
+  }
+
+  void _leaveOpportunity(String id) {
+    setState(() {
+      widget.userProfile.joinedOpportunityIds.remove(id);
     });
     widget.onDataChanged();
   }

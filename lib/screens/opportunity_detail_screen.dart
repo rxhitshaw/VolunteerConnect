@@ -15,6 +15,7 @@ class OpportunityDetailScreen extends StatefulWidget {
   final bool isCompleted;
   final VoidCallback onToggleBookmark;
   final VoidCallback onJoin;
+  final VoidCallback onLeave;
 
   const OpportunityDetailScreen({
     super.key,
@@ -25,6 +26,7 @@ class OpportunityDetailScreen extends StatefulWidget {
     required this.isCompleted,
     required this.onToggleBookmark,
     required this.onJoin,
+    required this.onLeave,
   });
 
   @override
@@ -103,6 +105,49 @@ class _OpportunityDetailScreenState extends State<OpportunityDetailScreen> {
               );
             },
             child: const Text('Confirm & Join'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmLeave() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Attendance?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to leave ${widget.opportunity.title}?'),
+            const SizedBox(height: 10),
+            const Text(
+              'Your spot will be released so other community members can participate.',
+              style: TextStyle(fontSize: 12.5, color: Colors.black54),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Stay Joined'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _joined = false;
+              });
+              widget.onLeave();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Left ${widget.opportunity.title}. Spot released.'),
+                ),
+              );
+            },
+            child: const Text('Yes, Leave Activity'),
           ),
         ],
       ),
@@ -420,13 +465,14 @@ class _OpportunityDetailScreenState extends State<OpportunityDetailScreen> {
                         label: const Text('Activity Completed'),
                       )
                     : _joined
-                        ? FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.blue.shade700,
+                        ? OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red.shade700,
+                              side: BorderSide(color: Colors.red.shade300),
                             ),
-                            onPressed: null,
-                            icon: const Icon(Icons.check),
-                            label: const Text('You Have Joined'),
+                            onPressed: _confirmLeave,
+                            icon: const Icon(Icons.event_busy, size: 18),
+                            label: const Text('Joined • Tap to Leave'),
                           )
                         : FilledButton.icon(
                             onPressed: _confirmJoin,
